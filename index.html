@@ -1,1 +1,65 @@
-<h2>We are working on it right now. Please come back later.</h2>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Qroma AI — Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="w-full flex justify-center bg-[#F8F7FF]">
+    <div class="w-full max-w-md bg-qroma-surface relative h-screen shadow-2xl overflow-hidden transition-colors duration-300">
+        
+        <!-- Welcome Screen (From Demo) -->
+        <section id="screen-welcome" class="screen active flex-col justify-between h-full p-8 relative overflow-hidden">
+            <div class="circle-blob -top-20 -right-20"></div>
+            <div class="circle-blob -bottom-20 -left-20"></div>
+            <div class="mt-24 z-10">
+                <h1 class="text-6xl font-extrabold tracking-tighter mb-6 font-coolvetica main-h">Qroma</h1>
+                <p class="text-2xl font-medium leading-tight max-w-[280px]">Hey, I'm Qroma. I feel happy to have a conversation with you.</p>
+            </div>
+            <button onclick="window.showScreen('screen-auth')" class="w-full bg-[#18102B] text-white py-5 rounded-full text-2xl font-bold mb-4 active:scale-95 transition-transform z-10">Let's continue</button>
+        </section>
+
+        <!-- Auth Screen -->
+        <section id="screen-auth" class="screen flex-col h-full p-8 pt-16 overflow-y-auto z-10 relative">
+            <h2 class="text-4xl font-bold tracking-tight mb-12 leading-tight font-jakarta">Continue<br>to Qroma</h2>
+            <div class="bg-qroma p-6 rounded-[32px] space-y-4">
+                <input id="email-input" type="email" placeholder="mail@example.com" class="w-full p-4 rounded-2xl bg-white outline-none text-lg">
+                <input id="pwd-input" type="password" placeholder="Password" class="w-full p-4 rounded-2xl bg-white outline-none text-lg tracking-widest">
+                <button id="auth-btn" class="w-full bg-[#D7C7FF] text-[#18102B] py-4 rounded-2xl text-2xl font-bold active:scale-95 transition-all">Let's Goo</button>
+                <div class="text-white text-center text-sm font-medium" id="auth-msg"></div>
+                <div class="border-t border-white/20 my-2"></div>
+                <button id="google-btn" class="w-full bg-white p-4 rounded-2xl flex items-center justify-center gap-3 font-bold text-xl active:scale-95 transition-all">
+                    <img src="https://www.gstatic.com/images/branding/product/1x/googleg_48dp.png" class="w-6" alt="Google"> Google
+                </button>
+                <button id="github-btn" class="w-full bg-white p-4 rounded-2xl flex items-center justify-center gap-3 font-bold text-xl active:scale-95 transition-all">
+                    <i data-lucide="github" class="w-6 h-6"></i> GitHub
+                </button>
+            </div>
+        </section>
+
+        <!-- Onboarding Overlay -->
+        <div id="onboarding-modal" class="overlay fixed inset-0 bg-black/60 z-50 items-center justify-center hidden">
+            <div class="bg-white w-[90%] p-6 rounded-3xl space-y-4 max-w-sm max-h-[90vh] overflow-y-auto">
+                <h3 class="text-2xl font-bold">Welcome to Qroma</h3>
+                <input id="ob-name" type="text" placeholder="Your Name" class="w-full p-3 rounded-xl bg-gray-100 outline-none">
+                <label class="flex items-center gap-2 text-sm"><input type="checkbox" id="ob-age" class="w-4 h-4"> I am 18 or older</label>
+                <div>
+                    <p class="text-sm font-bold mb-2">Select Your Starting Theme</p>
+                    <div class="grid grid-cols-2 gap-2 text-xs" id="theme-grid">
+                        <button class="theme-btn p-2 rounded-lg bg-[#834DFB] text-white" data-theme="QromaSignature">Signature</button>
+                        <button class="theme-btn p-2 rounded-lg bg-gray-200" data-theme="MidnightFusion">Midnight</button>
+                        <button class="theme-btn p-2 rounded-lg bg-gray-200" data-theme="Forest">Forest</button>
+                        <button class="theme-btn p-2 rounded-lg bg-gray-200" data-theme="Ocean">Ocean</button>
+                    </div>
+                </div>
+                <button id="ob-submit" class="w-full bg-[#18102B] text-white py-3 rounded-xl font-bold mt-4">Start Chatting</button>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

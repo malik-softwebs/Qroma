@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Qroma AI — Production UI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+@import url('https://fonts.googleapis.com/css2?family=Work+Sans:ital,wght@0,100..900;1,100..900&display=swap');
+        :root {
+            --md-sys-color-primary: #834DFB;
+            --md-sys-color-surface: #F8F7FF;
+            --md-sys-color-secondary: #D7C7FF;
+            --md-sys-color-dark: #18102B;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--md-sys-color-surface);
+            color: #1C1B1F;
+            overflow: hidden; /* Prevent bounce in mobile */
+            height: 100vh;
+        }
+@font-face {
+  font-family: 'Coolvetica';
+  /* Update the path below to match your folder structure */
+  src: url('font/CoolveticaRg.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap; /* Shows fallback font while loading */
+}
+
+.main-h{
+    font-family: "Work Sans", sans-serif;
+    font: "Work Sans", sans-serif;
+}
+.main-h2{
+    font-family: "Work Sans", sans-serif;
+    
+}
+        .font-jakarta { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .bg-qroma { background-color: var(--md-sys-color-primary); }
+        .text-qroma { color: var(--md-sys-color-primary); }
+        
+        /* Screen Management */
+        .screen { display: none; opacity: 0; transition: opacity 0.3s ease; }
+        .screen.active { display: flex; opacity: 1; }
+
+        /* Sidebar & Modals */
+        .sidebar { transform: translateX(-100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .sidebar.open { transform: translateX(0); }
+        .overlay { opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+        .overlay.active { opacity: 1; pointer-events: auto; }
+
+        /* Splash Blobs */
+        .circle-blob {
+            position: absolute; width: 280px; height: 280px;
+            background: var(--md-sys-color-primary); border-radius: 50%;
+            opacity: 0.8; z-index: -1;
+        }
+
+        /* Message Bubbles */
+        .bubble-user { border-radius: 24px 24px 4px 24px; }
+        .bubble-ai { border-radius: 4px 24px 24px 24px; }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 0px; }
+    </style>
+</head>
+<body class="w-full">
+
+    <div id="ui-overlay" onclick="closeAllOverlays()" class="overlay fixed inset-0 bg-black/40 z-40"></div>
+
+    <aside id="chat-sidebar" class="sidebar fixed top-0 left-0 h-full w-[80%] max-w-[300px] bg-white z-50 p-6 flex flex-col shadow-2xl">
+        <div class="flex items-center justify-between mb-8">
+            <h3 class="text-2xl font-bold font-jakarta text-qroma">History</h3>
+            <button onclick="toggleSidebar()"><i data-lucide="x" class="w-6 h-6"></i></button>
+        </div>
+        
+        <div class="space-y-4 flex-1 overflow-y-auto">
+            <div class="p-4 bg-[#F0E6FF] rounded-2xl flex items-center gap-3">
+                <i data-lucide="message-square" class="w-5 h-5 text-qroma"></i>
+                <div class="truncate font-medium">Spanish Song Title...</div>
+            </div>
+            <div class="p-4 hover:bg-gray-100 rounded-2xl flex items-center gap-3 transition-colors">
+                <i data-lucide="message-square" class="w-5 h-5 text-gray-400"></i>
+                <div class="truncate">DeepDive Logic...</div>
+            </div>
+            <div class="p-4 hover:bg-gray-100 rounded-2xl flex items-center gap-3 transition-colors">
+                <i data-lucide="message-square" class="w-5 h-5 text-gray-400"></i>
+                <div class="truncate">UI Architecture...</div>
+            </div>
+        </div>
+
+        <div class="mt-auto pt-6 border-t space-y-2">
+            <button onclick="openSettings()" class="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50">
+                <i data-lucide="settings" class="w-5 h-5"></i> Settings
+            </button>
+            <button class="w-full flex items-center gap-3 p-3 rounded-xl text-red-500">
+                <i data-lucide="log-out" class="w-5 h-5"></i> Logout
+            </button>
+        </div>
+    </aside>
+
+    <section id="screen-welcome" class="screen active flex-col justify-between h-full p-8 relative overflow-hidden">
+        <div class="circle-blob -top-20 -right-20"></div>
+        <div class="circle-blob -bottom-20 -left-20"></div>
+        <div class="mt-24">
+            <h1 class="text-6xl font-extrabold tracking-tighter mb-6 font-coolvetica main-h">Qroma</h1>
+            <p class="text-2xl font-medium leading-tight max-w-[280px]">Hey, I'm Qroma. I feel happy to have a conversation with you.</p>
+        </div>
+        <button onclick="showScreen('screen-auth')" class="w-full bg-[#18102B] text-white py-5 rounded-full text-2xl font-bold mb-4 active:scale-95 transition-transform">Let's continue</button>
+    </section>
+
+    <section id="screen-auth" class="screen flex-col h-full p-8 pt-16 overflow-y-auto">
+        <h2 class="text-4xl font-bold tracking-tight mb-12 leading-tight font-jakarta">Continue<br>to DeepDive</h2>
+        <div class="bg-qroma p-6 rounded-[32px] space-y-4">
+            <div class="relative">
+                <input type="email" placeholder="mail@example.com" class="w-full p-4 pr-14 rounded-2xl bg-white outline-none text-lg">
+                <button class="absolute right-3 top-3 w-10 h-10 bg-[#D7C7FF] rounded-xl flex items-center justify-center active:scale-90 transition-all">
+                    <i data-lucide="mail-check" class="w-5 h-5 text-qroma"></i>
+                </button>
+            </div>
+            <input type="password" placeholder="XXXXXXXX" class="w-full p-4 rounded-2xl bg-white outline-none text-lg text-center tracking-widest">
+            <button onclick="showScreen('screen-chat')" class="w-full bg-[#D7C7FF] text-[#18102B] py-4 rounded-2xl text-2xl font-bold active:scale-95 transition-all">Let's Goo</button>
+            <div class="border-t border-white/20 my-2"></div>
+            <button class="w-full bg-white p-4 rounded-2xl flex items-center justify-center gap-3 font-bold text-xl active:scale-95 transition-all">
+                <img src="https://www.gstatic.com/images/branding/product/1x/googleg_48dp.png" class="w-6" alt="Google"> Google
+            </button>
+            <button class="w-full bg-white p-4 rounded-2xl flex items-center justify-center gap-3 font-bold text-xl active:scale-95 transition-all">
+                <i data-lucide="github" class="w-6 h-6"></i> GitHub
+            </button>
+        </div>
+    </section>
+
+    <section id="screen-chat" class="screen flex-col h-full">
+        <header class="px-4 py-4 flex items-center justify-between bg-white/50 backdrop-blur-md sticky top-0 z-30">
+            <div class="flex items-center gap-3">
+                <button onclick="toggleSidebar()" class="p-2 active:scale-90 transition-all">
+                    <i data-lucide="panel-left" class="w-7 h-7"></i>
+                </button>
+                <div class="bg-qroma text-white px-5 py-1.5 rounded-full text-xl font-bold font-jakarta main-h2"><h2 class="main-h2">Qroma</h2></div>
+            </div>
+            <button class="p-2.5 border-0 border-black rounded-xl active:scale-90 transition-all">
+                <i data-lucide="square-pen" class="w-6 h-6"></i>
+            </button>
+        </header>
+
+        <div class="flex-1 overflow-y-auto p-4 space-y-6">
+            <div class="flex justify-end">
+                <div class="bg-[#D7C7FF] p-4 bubble-user max-w-[85%] text-[17px] leading-relaxed shadow-sm">
+                    Spanish song with tabla beats vibe check!
+                </div>
+            </div>
+            <div class="flex justify-start">
+                <div class="max-w-[90%] space-y-4">
+                    <p class="text-[17px] leading-relaxed bubble-ai bg-white p-4 border border-gray-100 shadow-sm">
+                        🔥 Sounds like a banger! The tabla-spanish fusion is rare. 
+                        <br><br><strong>Suggestions:</strong><br>• Rhythm of Madrid<br>• Tabla Fusion 101
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <footer class="p-4 pb-8 bg-white/80 backdrop-blur-sm">
+            <div class="border-2 border-qroma rounded-[32px] p-2 bg-white shadow-xl flex flex-col gap-2">
+                <textarea rows="1" placeholder="Ask Qroma anything..." class="w-full px-4 pt-2 outline-none resize-none text-[17px]"></textarea>
+                <div class="flex items-center justify-between px-2 pb-1">
+                    <div class="flex gap-1">
+                        <button class="p-2 text-gray-500 hover:text-qroma active:scale-90 transition-all">
+                            <i data-lucide="image" class="w-6 h-6"></i>
+                        </button>
+                        <button class="p-2 text-gray-500 active:scale-90 transition-all">
+                            <i data-lucide="mic" class="w-6 h-6"></i>
+                        </button>
+                    </div>
+                    <button class="w-12 h-12 bg-qroma rounded-2xl flex items-center justify-center active:scale-90 transition-all shadow-lg">
+                        <i data-lucide="arrow-up" class="w-6 h-6 text-white"></i>
+                    </button>
+                </div>
+            </div>
+        </footer>
+    </section>
+
+    <div id="settings-sheet" class="fixed bottom-0 left-0 w-full bg-white z-50 rounded-t-[40px] p-8 shadow-[0_-20px_50px_rgba(0,0,0,0.1)] transform translate-y-full transition-transform duration-300">
+        <div class="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-8"></div>
+        <h3 class="text-3xl font-bold font-jakarta mb-6">Settings</h3>
+        <div class="space-y-6">
+            <div class="flex items-center justify-between p-4 bg-gray-50 rounded-2xl">
+                <div class="flex items-center gap-3">
+                    <i data-lucide="moon" class="w-6 h-6"></i>
+                    <span class="text-lg font-medium">Dark Mode</span>
+                </div>
+                <div class="w-12 h-6 bg-gray-300 rounded-full relative">
+                    <div class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full"></div>
+                </div>
+            </div>
+            <div class="flex items-center justify-between p-4 bg-gray-50 rounded-2xl">
+                <div class="flex items-center gap-3 text-qroma">
+                    <i data-lucide="sparkles" class="w-6 h-6"></i>
+                    <span class="text-lg font-bold">Get Qroma Pro</span>
+                </div>
+                <i data-lucide="chevron-right"></i>
+            </div>
+        </div>
+        <button onclick="closeAllOverlays()" class="w-full mt-8 py-4 bg-[#18102B] text-white rounded-2xl font-bold text-xl">Done</button>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => {
+                s.classList.remove('active');
+            });
+            const target = document.getElementById(screenId);
+            target.classList.add('active');
+            lucide.createIcons();
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('chat-sidebar');
+            const overlay = document.getElementById('ui-overlay');
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('active');
+        }
+
+        function openSettings() {
+            toggleSidebar(); // Close sidebar first
+            setTimeout(() => {
+                document.getElementById('settings-sheet').style.transform = 'translateY(0)';
+                document.getElementById('ui-overlay').classList.add('active');
+            }, 100);
+        }
+
+        function closeAllOverlays() {
+            document.getElementById('chat-sidebar').classList.remove('open');
+            document.getElementById('settings-sheet').style.transform = 'translateY(100%)';
+            document.getElementById('ui-overlay').classList.remove('active');
+        }
+    </script>
+</body>
+</html>
