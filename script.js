@@ -61,28 +61,51 @@ window.regenerateLastResponse = async () => { if (!currentConversationId) return
 setInterval(() => { const clock = document.getElementById('header-clock'); if (clock) clock.innerText = new Date().toLocaleString([], { weekday: 'short', hour: '2-digit', minute: '2-digit' }); }, 1000);
 
 // ======================= CORE DATA ROUTING =======================
+// Replace your existing checkSessionAndRoute in script.js with this:
 const checkSessionAndRoute = async () => {
     const { data: { session } } = await supabaseClient.auth.getSession();
     currentUser = session?.user || null;
     const isIndex = !!document.getElementById('screen-auth');
 
     if (currentUser) {
-        const { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', currentUser.id).single();
+        // Explicitly fetch the profile to see if onboarding was completed
+        const { data: profile, error } = await supabaseClient
+            .from('profiles')
+            .select('*')
+            .eq('id', currentUser.id)
+            .single();
+        
         userProfile = profile;
-        if (!profile && isIndex) { document.getElementById('onboarding-modal')?.classList.replace('hidden', 'flex'); } 
-        else if (isIndex) { window.location.href = 'chat.html'; } 
-        else if (!isIndex) {
-            const { data: prefs } = await supabaseClient.from('user_preferences').select('*').eq('id', currentUser.id).single();
-            userPreferences = prefs || {};
-            const { data: perso } = await supabaseClient.from('personalities').select('*').eq('user_id', currentUser.id);
-            personalities = perso || [];
-            applyTheme(profile?.theme);
-            loadAndApplyFont(userPreferences.custom_font || 'Inter', userPreferences.custom_font_url);
-            populatePersonalitiesSwitcher();
-            loadConversations();
+
+        if (!profile) {
+            // User exists but has no profile record: Show Onboarding
+            if (isIndex) {
+                document.getElementById('onboarding-modal')?.classList.replace('hidden', 'flex');
+            } else {
+                // If they somehow reached chat.html without a profile, send them back to onboard
+                window.location.href = 'index.html';
+            }
+        } else {
+            // Profile exists: Proceed to Chat
+            if (isIndex) {
+                window.location.href = 'chat.html';
+            } else {
+                // Standard chat initialization
+                const { data: prefs } = await supabaseClient.from('user_preferences').select('*').eq('id', currentUser.id).single();
+                userPreferences = prefs || {};
+                const { data: perso } = await supabaseClient.from('personalities').select('*').eq('user_id', currentUser.id);
+                personalities = perso || [];
+                applyTheme(profile?.theme);
+                loadAndApplyFont(userPreferences.custom_font || 'Inter', userPreferences.custom_font_url);
+                populatePersonalitiesSwitcher();
+                loadConversations();
+            }
         }
-    } else if (!isIndex) { window.location.href = 'index.html'; }
+    } else if (!isIndex) {
+        window.location.href = 'index.html';
+    }
 };
+
 
 // ======================= MESSAGE RENDERING (FIXED HTML & MATH) =======================
 const postProcessMessage = (element) => {
