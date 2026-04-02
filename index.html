@@ -12,7 +12,6 @@
 <body class="w-full flex justify-center bg-[#F8F7FF]">
     <div class="w-full max-w-md bg-qroma-surface relative h-screen shadow-2xl overflow-hidden transition-colors duration-300">
         
-        <!-- Welcome Screen (From Demo) -->
         <section id="screen-welcome" class="screen active flex-col justify-between h-full p-8 relative overflow-hidden">
             <div class="circle-blob -top-20 -right-20"></div>
             <div class="circle-blob -bottom-20 -left-20"></div>
@@ -23,7 +22,6 @@
             <button onclick="window.showScreen('screen-auth')" class="w-full bg-[#18102B] text-white py-5 rounded-full text-2xl font-bold mb-4 active:scale-95 transition-transform z-10">Let's continue</button>
         </section>
 
-        <!-- Auth Screen -->
         <section id="screen-auth" class="screen flex-col h-full p-8 pt-16 overflow-y-auto z-10 relative">
             <h2 class="text-4xl font-bold tracking-tight mb-12 leading-tight font-jakarta">Continue<br>to Qroma</h2>
             <div class="bg-qroma p-6 rounded-[32px] space-y-4">
@@ -36,12 +34,11 @@
                     <img src="https://www.gstatic.com/images/branding/product/1x/googleg_48dp.png" class="w-6" alt="Google"> Google
                 </button>
                 <button id="github-btn" class="w-full bg-white p-4 rounded-2xl flex items-center justify-center gap-3 font-bold text-xl active:scale-95 transition-all">
-                    <i data-lucide="github" class="w-6 h-6"></i> GitHub
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTh4zqIvYqfV0Q60JVuc-_F3zVtGApt7zvw4woluyJSRg&s" class="w-6" alt="Google"> GitHub
                 </button>
             </div>
         </section>
 
-        <!-- Onboarding Overlay -->
         <div id="onboarding-modal" class="overlay fixed inset-0 bg-black/60 z-50 items-center justify-center hidden">
             <div class="bg-white w-[90%] p-6 rounded-3xl space-y-4 max-w-sm max-h-[90vh] overflow-y-auto">
                 <h3 class="text-2xl font-bold">Welcome to Qroma</h3>
@@ -50,10 +47,12 @@
                 <div>
                     <p class="text-sm font-bold mb-2">Select Your Starting Theme</p>
                     <div class="grid grid-cols-2 gap-2 text-xs" id="theme-grid">
-                        <button class="theme-btn p-2 rounded-lg bg-[#834DFB] text-white" data-theme="QromaSignature">Signature</button>
-                        <button class="theme-btn p-2 rounded-lg bg-gray-200" data-theme="MidnightFusion">Midnight</button>
-                        <button class="theme-btn p-2 rounded-lg bg-gray-200" data-theme="Forest">Forest</button>
+                        <button class="theme-btn p-2 rounded-lg bg-[#834DFB] text-white" data-theme="Signature">Signature</button>
+                        <button class="theme-btn p-2 rounded-lg bg-gray-200" data-theme="Midnight">Midnight</button>
+                        <button class="theme-btn p-2 rounded-lg bg-gray-200" data-theme="Noir">Noir</button>
                         <button class="theme-btn p-2 rounded-lg bg-gray-200" data-theme="Ocean">Ocean</button>
+                        <button class="theme-btn p-2 rounded-lg bg-gray-200" data-theme="Forest">Forest</button>
+                        <button class="theme-btn p-2 rounded-lg bg-gray-200" data-theme="Burgundy">Burgundy</button>
                     </div>
                 </div>
                 <button id="ob-submit" class="w-full bg-[#18102B] text-white py-3 rounded-xl font-bold mt-4">Start Chatting</button>

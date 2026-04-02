@@ -8,7 +8,6 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     
-    <!-- Rich Text & Formatting Libs -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" id="hljs-theme-dark">
@@ -23,7 +22,6 @@
         
         <div id="ui-overlay" class="overlay fixed inset-0 bg-black/40 z-40" onclick="window.closeOverlays()"></div>
 
-        <!-- Sidebar -->
         <aside id="chat-sidebar" class="sidebar absolute top-0 left-0 h-full w-[80%] max-w-[300px] bg-white z-50 p-6 flex flex-col shadow-2xl">
             <div class="flex items-center justify-between mb-8">
                 <h3 class="text-2xl font-bold font-jakarta text-qroma">History</h3>
@@ -40,7 +38,6 @@
             </div>
         </aside>
 
-        <!-- Header -->
         <header class="px-4 py-4 flex items-center justify-between bg-white/50 backdrop-blur-md sticky top-0 z-30 border-b border-gray-100">
             <div class="flex items-center gap-3">
                 <button id="menu-btn" class="p-2 active:scale-90 transition-all text-qroma-dark"><i data-lucide="panel-left" class="w-7 h-7"></i></button>
@@ -53,7 +50,6 @@
             </div>
         </header>
 
-        <!-- Chat Area -->
         <div id="chat-area" class="flex-1 overflow-y-auto p-4 space-y-6 flex flex-col pb-44 scroll-smooth">
             <div id="empty-state" class="mt-24 text-center hidden">
                 <h1 class="text-5xl font-extrabold tracking-tighter mb-4 main-h text-qroma">Qroma</h1>
@@ -62,7 +58,6 @@
             <div id="messages-container" class="space-y-6 w-full flex flex-col"></div>
         </div>
 
-        <!-- Input Area -->
         <footer class="absolute bottom-0 w-full p-4 pb-8 bg-gradient-to-t from-white via-white/90 to-transparent z-30">
             <button id="stop-generating-btn" class="hidden mx-auto mb-2 flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-full shadow-md text-sm font-semibold hover:bg-gray-50 text-red-500 transition-all active:scale-95"><i data-lucide="square" class="w-4 h-4"></i> Stop generating</button>
             <div class="border-2 border-qroma rounded-[32px] p-2 bg-white shadow-xl flex flex-col gap-2 transition-colors">
@@ -86,21 +81,18 @@
                 <span id="pro-badge" class="hidden bg-black text-white px-3 py-1 rounded-full text-xs font-bold tracking-widest"><i data-lucide="gem" class="w-3 h-3 inline mr-1"></i>PRO</span>
             </div>
             <div class="space-y-6">
-                <div class="flex border-b overflow-x-auto no-scrollbar"><button class="tab-btn active p-3 font-bold flex-shrink-0" data-tab="profile">Profile & Theme</button><button class="tab-btn p-3 font-bold text-gray-400 flex-shrink-0" data-tab="fonts">Fonts</button><button class="tab-btn p-3 font-bold text-gray-400 flex-shrink-0" data-tab="personalities">Personas</button><button class="tab-btn p-3 font-bold text-gray-400 flex-shrink-0" data-tab="pro">Pro</button></div>
+                <div class="flex border-b overflow-x-auto no-scrollbar"><button class="tab-btn active p-3 font-bold flex-shrink-0" data-tab="profile">Profile</button><button class="tab-btn p-3 font-bold text-gray-400 flex-shrink-0" data-tab="fonts">Fonts</button><button class="tab-btn p-3 font-bold text-gray-400 flex-shrink-0" data-tab="personalities">Personas</button><button class="tab-btn p-3 font-bold text-gray-400 flex-shrink-0" data-tab="pro">Pro</button></div>
                 
-                <!-- Tab: Profile/Theme -->
                 <div id="tab-profile" class="tab-content space-y-5">
                     <div><label class="text-sm font-bold text-gray-500 mb-1 block">Your Name</label><input id="set-name" type="text" class="w-full bg-gray-50 p-3 rounded-xl outline-none border font-medium"></div>
                     <div><label class="text-sm font-bold text-gray-500 mb-1 block">App Theme</label><select id="set-theme" class="w-full bg-gray-50 p-3 rounded-xl outline-none border font-medium"></select></div>
                 </div>
 
-                <!-- Tab: Fonts -->
                 <div id="tab-fonts" class="tab-content hidden space-y-5">
                     <div><label class="text-sm font-bold text-gray-500 mb-2 block">Chat Font</label><div id="font-pills-container" class="flex flex-wrap gap-2"></div></div>
                     <div><label class="text-sm font-bold text-gray-500 mb-1 flex justify-between">Import Google Font URL <span class="text-qroma text-xs font-bold">Pro</span></label><input id="set-font-url" type="url" placeholder="Paste URL and press Enter..." class="w-full bg-gray-50 p-3 rounded-xl outline-none border font-medium text-sm"></div>
                 </div>
 
-                <!-- Tab: Personas -->
                 <div id="tab-personalities" class="tab-content hidden space-y-5">
                     <p class="text-xs text-gray-500 -mt-3">Create specific AI personalities for different tasks.</p>
                     <div id="personalities-list" class="space-y-2 max-h-40 overflow-y-auto pr-2"></div>
@@ -111,7 +103,6 @@
                     </div>
                 </div>
 
-                <!-- Tab: Pro -->
                 <div id="tab-pro" class="tab-content hidden space-y-4">
                     <div><label class="text-sm font-bold text-gray-500 mb-1 block">Custom System Prompt <span class="text-qroma text-xs font-bold">Pro</span></label><textarea id="set-custom-prompt" rows="3" placeholder="Append custom global instructions here..." class="w-full bg-gray-50 p-3 rounded-xl outline-none border font-medium resize-none text-sm"></textarea></div>
                     <div id="get-pro-btn" class="flex items-center justify-between p-4 bg-[#F0E6FF] rounded-2xl cursor-pointer active:scale-95 transition-transform border border-[#D7C7FF]"><div class="flex items-center gap-3 text-qroma"><i data-lucide="sparkles" class="w-6 h-6"></i><div><span class="text-lg font-bold block leading-none">Get Qroma Pro</span><span class="text-xs font-medium text-qroma/70">Tap to activate via WhatsApp</span></div></div><i data-lucide="chevron-right" class="text-qroma"></i></div>
@@ -121,7 +112,6 @@
             <div class="flex gap-3 mt-8"><button id="close-settings-btn" class="flex-1 py-4 bg-gray-100 text-gray-600 rounded-2xl font-bold text-lg active:scale-95 transition-all">Cancel</button><button id="save-settings-btn" class="flex-1 py-4 bg-black text-white rounded-2xl font-bold text-lg shadow-xl shadow-black/20 active:scale-95 transition-all">Save</button></div>
         </div>
         
-        <!-- Rename Modal -->
         <div id="rename-modal" class="overlay fixed inset-0 z-[60] hidden items-center justify-center bg-black/60"><div class="bg-white rounded-2xl p-6 w-11/12 max-w-sm space-y-4"><h3 class="text-lg font-bold">Rename Chat</h3><input id="rename-input" class="w-full p-3 bg-gray-100 rounded-lg outline-none font-medium"><div class="flex gap-2 justify-end pt-2"><button onclick="window.closeOverlays()" class="px-4 py-2 rounded-lg font-medium text-gray-600">Cancel</button><button onclick="window.confirmRename()" id="confirm-rename" class="px-4 py-2 rounded-lg bg-black text-white font-bold">Save</button></div></div></div>
 
     </div>

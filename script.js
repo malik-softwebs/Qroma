@@ -3,6 +3,7 @@ lucide.createIcons();
 const supabaseUrl = 'https://uggbbvvbckxyffrxusdx.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVnZ2JidnZiY2t4eWZmcnh1c2R4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3MTU4OTYsImV4cCI6MjA4OTI5MTg5Nn0.c38aC8rsYqMaKGpGP0rgBkfC-wDxPMiJMISFig-OL18';
 const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
+const REDIRECT_URL = 'https://qroma.netlify.app/chat.html';
 
 // Global State
 let currentUser = null, userProfile = null, userPreferences = null, personalities = [];
@@ -11,25 +12,19 @@ let streamController = null;
 
 // ======================= THEME & FONT ENGINE =======================
 const appThemes = {
-    ElectricViolet: { p: '#834DFB', s: '#F5F3FF', sec: '#D7C7FF', d: '#18102B' }, Turbo: { p: '#F0E100', s: '#FEF9E7', sec: '#FFF9C0', d: '#18102B' },
-    Haiti: { p: '#18102B', s: '#F5F3FF', sec: '#D7C7FF', d: '#834DFB' }, BlueChalk: { p: '#F5F3FF', s: '#834DFB', sec: '#D7C7FF', d: '#18102B' },
-    Oat: { p: '#FFFF01', s: '#FEFEF0', sec: '#FFF9C0', d: '#1C1C1C' }, Indigo: { p: '#C8C3FF', s: '#F8F7FF', sec: '#E5E0FF', d: '#2D2A5A' },
-    Burgundy: { p: '#66001F', s: '#F9F8EB', sec: '#D4A5A5', d: '#3E2723' }, Espresso: { p: '#3E2723', s: '#F9F8EB', sec: '#D7C7AA', d: '#66001F' },
-    Dune: { p: '#F9F8EB', s: '#3E2723', sec: '#D7C7AA', d: '#66001F' }, Forest: { p: '#06482F', s: '#F9F8EB', sec: '#CDEEB2', d: '#CEF17B' },
-    Matcha: { p: '#D9FFE8', s: '#06482F', sec: '#A8E6B0', d: '#00311F' }, Pine: { p: '#00311F', s: '#E7F3EC', sec: '#A8E6B0', d: '#D9FFE8' },
-    Leaf: { p: '#CDEEB2', s: '#06482F', sec: '#A8E6B0', d: '#F9F8EB' }, Green: { p: '#076C45', s: '#E7F3EC', sec: '#CDEEB2', d: '#00311F' },
-    Bluestone: { p: '#3E56F0', s: '#F7F7FF', sec: '#BAD5F0', d: '#1A2B6B' }, Sky: { p: '#BAD5F0', s: '#F7F7FF', sec: '#D2EAFF', d: '#1E4B6E' },
-    Sea: { p: '#6482F2', s: '#E3F2FD', sec: '#BAD5F0', d: '#1A3B6E' }, Peony: { p: '#F4C9D6', s: '#FFF3E6', sec: '#FFD6DF', d: '#66001F' },
-    Pink: { p: '#FFD4F3', s: '#FFF3E6', sec: '#F4C9D6', d: '#381932' }, Plum: { p: '#381932', s: '#FFF3E6', sec: '#D8C0FF', d: '#FFD4F3' },
-    Paper: { p: '#EFEDE3', s: '#302F2C', sec: '#D0CDC2', d: '#070905' }, Asphalt: { p: '#302F2C', s: '#EFEDE3', sec: '#D0CDC2', d: '#070905' },
-    Milk: { p: '#FFF3E6', s: '#3E2723', sec: '#EC5E27', d: '#381932' }, Dermatologist: { p: '#958CE8', s: '#F8F7FF', sec: '#ACD1FD', d: '#21222D' },
-    BloodAnalysis: { p: '#DBDBE5', s: '#21222D', sec: '#ACD1FD', d: '#958CE8' }, QromaSignature: { p: '#834DFB', s: '#F5F3FF', sec: '#F0E100', d: '#18102B' },
-    MidnightFusion: { p: '#18102B', s: '#F5F3FF', sec: '#834DFB', d: '#F0E100', dark: true }
+    Signature: { p: '#834DFB', s: '#F8F7FF', sec: '#E5DDFF', d: '#18102B' },
+    Midnight: { p: '#A78BFA', s: '#0F0916', sec: '#2D1B4E', d: '#F3E8FF', dark: true },
+    Noir: { p: '#E5E5E5', s: '#000000', sec: '#1A1A1A', d: '#FFFFFF', dark: true },
+    Ocean: { p: '#0284C7', s: '#F0F9FF', sec: '#E0F2FE', d: '#0C4A6E' },
+    Forest: { p: '#059669', s: '#F0FDF4', sec: '#DCFCE7', d: '#064E3B' },
+    Burgundy: { p: '#E11D48', s: '#FFF1F2', sec: '#FFE4E6', d: '#881337' },
+    Dune: { p: '#D97706', s: '#FFFBEB', sec: '#FEF3C7', d: '#78350F' }
 };
+
 const builtInFonts = ['Inter', 'Plus Jakarta Sans', 'Work Sans', 'Coolvetica', 'Poppins', 'Playfair Display'];
 
-const applyTheme = (themeName = 'QromaSignature') => {
-    const t = appThemes[themeName] || appThemes.QromaSignature;
+const applyTheme = (themeName = 'Signature') => {
+    const t = appThemes[themeName] || appThemes.Signature;
     const root = document.documentElement.style;
     root.setProperty('--md-sys-color-primary', t.p); root.setProperty('--md-sys-color-surface', t.s);
     root.setProperty('--md-sys-color-secondary', t.sec); root.setProperty('--md-sys-color-dark', t.d);
@@ -63,7 +58,6 @@ window.deletePersonality = async (id) => { if (confirm('Delete this personality?
 window.copyMessageContent = (el) => { const content = el.closest('.message-ai').querySelector('.content').innerText; navigator.clipboard.writeText(content); alert('Copied!'); };
 window.regenerateLastResponse = async () => { if (!currentConversationId) return; const { data } = await supabaseClient.from('messages').select('id, content').eq('conversation_id', currentConversationId).eq('role', 'user').order('created_at', { ascending: false }).limit(1); if (data && data.length > 0) { const lastUserMessageId = data[0].id; await supabaseClient.from('messages').delete().eq('conversation_id', currentConversationId).gt('id', lastUserMessageId); document.getElementById('msg-input').value = data[0].content; document.getElementById('send-btn').click(); } };
 
-// Update header clock
 setInterval(() => { const clock = document.getElementById('header-clock'); if (clock) clock.innerText = new Date().toLocaleString([], { weekday: 'short', hour: '2-digit', minute: '2-digit' }); }, 1000);
 
 // ======================= CORE DATA ROUTING =======================
@@ -90,7 +84,7 @@ const checkSessionAndRoute = async () => {
     } else if (!isIndex) { window.location.href = 'index.html'; }
 };
 
-// ======================= MESSAGE RENDERING =======================
+// ======================= MESSAGE RENDERING (FIXED HTML & MATH) =======================
 const postProcessMessage = (element) => {
     element.querySelectorAll('.math-inline').forEach(el => katex.render(el.textContent, el, { throwOnError: false, displayMode: false }));
     element.querySelectorAll('.math-display').forEach(el => katex.render(el.textContent, el, { throwOnError: false, displayMode: true }));
@@ -104,10 +98,10 @@ function renderMessage(role, content, messageId, timestamp = null) {
     
     let formattedContent = '';
     if (content) {
-        // Sanitize code blocks safely before parsing markdown
-        const sanitized = content.replace(/```(\w*)\n([\s\S]*?)```/g, (match, lang, code) => `\n\`\`\`${lang}\n${code.replace(/</g, "&lt;").replace(/>/g, "&gt;")}\n\`\`\`\n`);
-        formattedContent = marked.parse(sanitized, { gfm: true, breaks: true });
-        formattedContent = formattedContent.replace(/\$\$([\s\S]*?)\$\$/g, '<div class="math-display">$1</div>').replace(/\$([^$]+?)\$/g, '<span class="math-inline">$1</span>');
+        // Pure marked parse (handles HTML escaping correctly natively via marked options if configured, but default works well for highlighting)
+        formattedContent = marked.parse(content, { breaks: true, gfm: true });
+        // Inject math classes
+        formattedContent = formattedContent.replace(/\$\$([\s\S]*?)\$\$/g, '<div class="math-display">$1</div>').replace(/\$([^$\n]+?)\$/g, '<span class="math-inline">$1</span>');
     }
     
     const timeDisplay = formatTime(timestamp);
@@ -125,7 +119,7 @@ function renderMessage(role, content, messageId, timestamp = null) {
             div.innerHTML = `
                 <div class="ai-avatar shrink-0 shadow-md">Q</div>
                 <div class="content-wrapper">
-                    <div class="content text-[17px] leading-relaxed">${content === null ? '<div class="pulsing-loader animate-pulse font-bold text-xl">...</div>' : formattedContent}</div>
+                    <div class="content text-[17px] leading-relaxed">${content === null ? '<div class="pulsing-loader animate-pulse font-bold text-xl text-gray-400">...</div>' : formattedContent}</div>
                     <div class="msg-meta">
                         <span class="timestamp">${timeDisplay}</span>
                         <div class="message-actions">
@@ -195,29 +189,26 @@ const renderPersonalitiesInSettings = () => { const list = document.getElementBy
 window.addEventListener('DOMContentLoaded', () => {
     checkSessionAndRoute();
     
-    // Auth Logic
     if (document.getElementById('screen-auth')) {
         document.getElementById('auth-btn').addEventListener('click', async () => { const email = document.getElementById('email-input').value, password = document.getElementById('pwd-input').value, msg = document.getElementById('auth-msg'); msg.innerText = "Processing..."; let { error } = await supabaseClient.auth.signInWithPassword({ email, password }); if (error) { const { error: signUpError } = await supabaseClient.auth.signUp({ email, password }); if (signUpError) { msg.innerText = signUpError.message; return; }} msg.innerText = "Success!"; checkSessionAndRoute(); });
-        document.getElementById('google-btn').onclick = () => supabaseClient.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin + '/chat.html' }});
-        document.getElementById('github-btn').onclick = () => supabaseClient.auth.signInWithOAuth({ provider: 'github', options: { redirectTo: window.location.origin + '/chat.html' }});
-        document.getElementById('ob-submit').onclick = async () => { const name = document.getElementById('ob-name').value; const theme = document.querySelector('.theme-btn.bg-\\[\\#834DFB\\]')?.dataset.theme || 'QromaSignature'; if (!name || !document.getElementById('ob-age').checked) return alert("Please enter name and confirm age."); await supabaseClient.from('profiles').insert({ id: currentUser.id, username: name, theme }); window.location.href = 'chat.html'; };
+        document.getElementById('google-btn').onclick = () => supabaseClient.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: REDIRECT_URL }});
+        document.getElementById('github-btn').onclick = () => supabaseClient.auth.signInWithOAuth({ provider: 'github', options: { redirectTo: REDIRECT_URL }});
+        document.getElementById('ob-submit').onclick = async () => { const name = document.getElementById('ob-name').value; const theme = document.querySelector('.theme-btn.bg-\\[\\#834DFB\\]')?.dataset.theme || 'Signature'; if (!name || !document.getElementById('ob-age').checked) return alert("Please enter name and confirm age."); await supabaseClient.from('profiles').insert({ id: currentUser.id, username: name, theme }); window.location.href = 'chat.html'; };
         document.querySelectorAll('.theme-btn').forEach(btn => btn.onclick = e => { document.querySelectorAll('.theme-btn').forEach(b => b.classList.replace('bg-[#834DFB]', 'bg-gray-200') || b.classList.replace('text-white', 'text-black')); e.target.classList.replace('bg-gray-200', 'bg-[#834DFB]'); e.target.classList.add('text-white'); });
     }
 
-    // Chat UI Logic
     if (document.getElementById('chat-area')) {
         const msgInput = document.getElementById('msg-input');
-        msgInput.addEventListener('input', function() { this.style.height = 'auto'; this.style.height = Math.min(this.scrollHeight, 120) + 'px'; });
+        msgInput.addEventListener('input', function() { this.style.height = 'auto'; this.style.height = Math.min(this.scrollHeight, 150) + 'px'; });
 
         document.getElementById('menu-btn').onclick = window.toggleSidebar; 
         document.getElementById('logout-btn').onclick = async () => { await supabaseClient.auth.signOut(); window.location.href = 'index.html'; };
         
-        // Fix new chat button (creates a fresh session without reload)
         document.getElementById('new-chat-btn').onclick = () => { 
             currentConversationId = null; 
             document.getElementById('messages-container').innerHTML = ''; 
             document.getElementById('empty-state').classList.remove('hidden'); 
-            loadConversations(); // Re-render sidebar to clear active selection
+            loadConversations(); 
             window.closeOverlays(); 
         };
         
@@ -227,11 +218,10 @@ window.addEventListener('DOMContentLoaded', () => {
         document.getElementById('personality-switcher').onchange = (e) => activePersonalityId = e.target.value;
         document.getElementById('stop-generating-btn').onclick = () => { if(streamController) streamController.abort(); };
 
-        // Open Settings & Populate
         document.getElementById('settings-btn').onclick = () => {
             window.closeOverlays();
             document.getElementById('set-name').value = userProfile?.username || '';
-            const themeSelect = document.getElementById('set-theme'); themeSelect.innerHTML = Object.keys(appThemes).map(t => `<option value="${t}">${t.replace(/([A-Z])/g, ' $1').trim()}</option>`).join(''); themeSelect.value = userProfile?.theme || 'QromaSignature';
+            const themeSelect = document.getElementById('set-theme'); themeSelect.innerHTML = Object.keys(appThemes).map(t => `<option value="${t}">${t}</option>`).join(''); themeSelect.value = userProfile?.theme || 'Signature';
             
             const fontContainer = document.getElementById('font-pills-container'); fontContainer.innerHTML = ''; 
             builtInFonts.forEach(font => { 
@@ -249,13 +239,10 @@ window.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => document.getElementById('settings-sheet').style.transform = 'translateY(0)', 100);
         };
         
-        // Settings Tabs
         document.querySelectorAll('.tab-btn').forEach(btn => btn.onclick = (e) => { document.querySelectorAll('.tab-btn').forEach(b => { b.classList.remove('active', 'text-qroma', 'border-b-2', 'border-qroma'); b.classList.add('text-gray-400'); }); e.target.classList.add('active', 'text-qroma', 'border-b-2', 'border-qroma'); e.target.classList.remove('text-gray-400'); document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden')); document.getElementById(`tab-${e.target.dataset.tab}`).classList.remove('hidden'); });
         
-        // Font URL parsing
         document.getElementById('set-font-url').onkeyup = async (e) => { if (e.key === 'Enter' && userProfile?.is_paid) { const url = e.target.value.trim(); if (!url) return; const match = url.match(/family=([^&:]+)/); if (match) { const fontName = decodeURIComponent(match[1].replace(/\+/g, ' ')); loadAndApplyFont(fontName, url); if (!builtInFonts.includes(fontName)) builtInFonts.push(fontName); document.getElementById('settings-btn').click(); } else alert("Invalid Google Font URL format."); } };
         
-        // Save Settings
         document.getElementById('save-settings-btn').onclick = async () => {
             const btn = document.getElementById('save-settings-btn'); btn.innerText = "Saving...";
             const newName = document.getElementById('set-name').value, newTheme = document.getElementById('set-theme').value, newFontUrl = document.getElementById('set-font-url').value.trim(), newFontName = document.querySelector('.font-pill.active')?.dataset.font || 'Inter', customSys = document.getElementById('set-custom-prompt').value.trim();
@@ -270,13 +257,12 @@ window.addEventListener('DOMContentLoaded', () => {
             await checkSessionAndRoute(); btn.innerText = "Save"; window.closeOverlays();
         };
 
-        // Pro Button Action
         document.getElementById('get-pro-btn').onclick = () => {
             const text = encodeURIComponent(`Hi! I'd like to get Qroma Pro.\nName: ${userProfile?.username}\nEmail: ${currentUser?.email}\nUser ID: ${currentUser?.id}`);
             window.open(`https://wa.me/923437335632?text=${text}`, '_blank');
         };
         
-        // ======================= MAIN AI SEND LOGIC =======================
+        // STREAMING SEND LOGIC
         document.getElementById('send-btn').onclick = async () => {
             const text = msgInput.value.trim(); if (!text && !attachedImageFile) return;
             msgInput.value = ''; msgInput.style.height = 'auto'; let uploadedImgUrl = null, localBlobUrl = null;
@@ -296,11 +282,9 @@ window.addEventListener('DOMContentLoaded', () => {
             document.getElementById('stop-generating-btn').classList.remove('hidden');
             
             try {
-                // Fetch last 15 messages
                 const { data: history } = await supabaseClient.from('messages').select('role, content').eq('conversation_id', currentConversationId).order('created_at', { ascending: false }).limit(15);
                 let messagesPayload = (history || []).reverse().map(m => ({ role: m.role, content: m.content }));
                 
-                // Construct Advanced System Prompt
                 const activePersonality = personalities.find(p => p.id === activePersonalityId);
                 let sysPrompt = `You are Qroma, an AI assistant.\nToday is ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}.\nUser name: ${userProfile?.username || 'User'}.\nUser is ${userProfile?.is_paid ? 'paid' : 'free'} user.\nCurrent theme: ${userProfile?.theme || 'Signature'}.\nBe helpful, concise, and friendly.`;
                 
@@ -309,16 +293,15 @@ window.addEventListener('DOMContentLoaded', () => {
                 
                 messagesPayload.unshift({ role: 'system', content: sysPrompt });
 
-                let model = 'llama-3.3-70b-versatile'; // Standard strict model
+                let model = 'llama-3.3-70b-versatile'; 
                 if (currentImgFile) {
-                    model = 'meta-llama/llama-4-scout-17b-16e-instruct'; // Strict vision model requested
+                    model = 'meta-llama/llama-4-scout-17b-16e-instruct'; 
                     messagesPayload.push({ role: 'user', content: [{ type: "text", text: text || "Analyze this image." }, { type: "image_url", image_url: { url: await fileToBase64(currentImgFile) } }] });
                 } else {
                     messagesPayload.push({ role: 'user', content: text });
                 }
 
-                // Call API with Streaming
-                const res = await fetch('https://api.groq.com/openai/v1/chat/completions', { method: 'POST', headers: { 'Authorization': `Bearer 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`, 'Content-Type': 'application/json' }, body: JSON.stringify({ model, messages: messagesPayload, stream: true }), signal: streamController.signal });
+                const res = await fetch('https://api.groq.com/openai/v1/chat/completions', { method: 'POST', headers: { 'Authorization': `Bearer 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`, 'Content-Type': 'application/json' }, body: JSON.stringify({ model, messages: messagesPayload, stream: true }), signal: streamController.signal });
                 if (!res.ok) { const err = await res.json(); throw new Error(err.error?.message || "API Failed"); }
                 
                 const reader = res.body.getReader();
