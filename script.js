@@ -33,14 +33,16 @@ const applyTheme = (themeName = 'Signature') => {
 };
 
 const loadAndApplyFont = (fontName, fontUrl = null) => {
-    if (!fontName || fontName === 'Coolvetica') { document.getElementById('main-container').style.fontFamily = fontName === 'Coolvetica' ? '"Coolvetica", sans-serif' : ''; return; }
+    const container = document.getElementById('main-container');
+    if (!container) return;
+    if (!fontName || fontName === 'Coolvetica') { container.style.fontFamily = fontName === 'Coolvetica' ? '"Coolvetica", sans-serif' : ''; return; }
     const fontId = `font-${fontName.replace(/\s/g, '-')}`;
     if (!document.getElementById(fontId)) {
         const link = document.createElement('link'); link.id = fontId; link.rel = 'stylesheet';
         link.href = fontUrl || `https://fonts.googleapis.com/css2?family=${fontName.replace(/ /g, '+')}:wght@400;500;600;700&display=swap`;
         document.head.appendChild(link);
     }
-    document.getElementById('main-container').style.fontFamily = `"${fontName}", sans-serif`;
+    container.style.fontFamily = `"${fontName}", sans-serif`;
 };
 
 // ======================= UTILITIES & EXPOSED ACTIONS =======================
@@ -61,78 +63,39 @@ window.regenerateLastResponse = async () => { if (!currentConversationId) return
 setInterval(() => { const clock = document.getElementById('header-clock'); if (clock) clock.innerText = new Date().toLocaleString([], { weekday: 'short', hour: '2-digit', minute: '2-digit' }); }, 1000);
 
 // ======================= CORE DATA ROUTING =======================
-// Optimized Logic for script.js
 const checkSessionAndRoute = async () => {
     const { data: { session } } = await supabaseClient.auth.getSession();
     currentUser = session?.user || null;
     const isIndex = !!document.getElementById('screen-auth');
 
     if (currentUser) {
-        // 1. Check if profile exists
-        const { data: profile } = await supabaseClient
-            .from('profiles')
-            .select('*')
-            .eq('id', currentUser.id)
-            .single();
-        
+        const { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', currentUser.id).single();
         userProfile = profile;
-
+        
         if (!profile) {
-            // 2. STALL REDIRECTION: Stay on index and show onboarding
             if (isIndex) {
                 document.getElementById('onboarding-modal')?.classList.replace('hidden', 'flex');
             } else {
-                // If they are on chat.html without a profile, send back to index to onboard
                 window.location.href = 'index.html';
             }
+        } else if (isIndex) {
+            window.location.href = 'chat.html';
         } else {
-            // 3. PROFILE EXISTS: Move to chat
-            if (isIndex) {
-                window.location.href = 'chat.html';
-            } else {
-                // Initialize chat application data
-                const { data: prefs } = await supabaseClient.from('user_preferences').select('*').eq('id', currentUser.id).single();
-                userPreferences = prefs || {};
-                const { data: perso } = await supabaseClient.from('personalities').select('*').eq('user_id', currentUser.id);
-                personalities = perso || [];
-                applyTheme(profile?.theme);
-                loadAndApplyFont(userPreferences.custom_font || 'Inter', userPreferences.custom_font_url);
-                populatePersonalitiesSwitcher();
-                loadConversations();
-            }
+            const { data: prefs } = await supabaseClient.from('user_preferences').select('*').eq('id', currentUser.id).single();
+            userPreferences = prefs || {};
+            const { data: perso } = await supabaseClient.from('personalities').select('*').eq('user_id', currentUser.id);
+            personalities = perso || [];
+            applyTheme(profile?.theme);
+            loadAndApplyFont(userPreferences.custom_font || 'Inter', userPreferences.custom_font_url);
+            populatePersonalitiesSwitcher();
+            loadConversations();
         }
     } else if (!isIndex) {
-        // No session and trying to access chat: send to login
         window.location.href = 'index.html';
     }
 };
 
-// Update the onboarding submit button handler to trigger the redirect
-document.getElementById('ob-submit').onclick = async () => {
-    const name = document.getElementById('ob-name').value;
-    const theme = document.querySelector('.theme-btn.bg-\\[\\#834DFB\\]')?.dataset.theme || 'Signature';
-    
-    if (!name || !document.getElementById('ob-age').checked) {
-        return alert("Please enter name and confirm age.");
-    }
-
-    // Create the profile
-    const { error } = await supabaseClient.from('profiles').insert({ 
-        id: currentUser.id, 
-        username: name, 
-        theme: theme 
-    });
-
-    if (error) {
-        alert("Error saving profile: " + error.message);
-    } else {
-        // Success: Automatically route to chat.html
-        window.location.href = 'chat.html';
-    }
-};
-
-
-// ======================= MESSAGE RENDERING (FIXED HTML & MATH) =======================
+// ======================= MESSAGE RENDERING =======================
 const postProcessMessage = (element) => {
     element.querySelectorAll('.math-inline').forEach(el => katex.render(el.textContent, el, { throwOnError: false, displayMode: false }));
     element.querySelectorAll('.math-display').forEach(el => katex.render(el.textContent, el, { throwOnError: false, displayMode: true }));
@@ -146,9 +109,7 @@ function renderMessage(role, content, messageId, timestamp = null) {
     
     let formattedContent = '';
     if (content) {
-        // Pure marked parse (handles HTML escaping correctly natively via marked options if configured, but default works well for highlighting)
         formattedContent = marked.parse(content, { breaks: true, gfm: true });
-        // Inject math classes
         formattedContent = formattedContent.replace(/\$\$([\s\S]*?)\$\$/g, '<div class="math-display">$1</div>').replace(/\$([^$\n]+?)\$/g, '<span class="math-inline">$1</span>');
     }
     
@@ -237,36 +198,67 @@ const renderPersonalitiesInSettings = () => { const list = document.getElementBy
 window.addEventListener('DOMContentLoaded', () => {
     checkSessionAndRoute();
     
-    if (document.getElementById('screen-auth')) {
-        document.getElementById('auth-btn').addEventListener('click', async () => { const email = document.getElementById('email-input').value, password = document.getElementById('pwd-input').value, msg = document.getElementById('auth-msg'); msg.innerText = "Processing..."; let { error } = await supabaseClient.auth.signInWithPassword({ email, password }); if (error) { const { error: signUpError } = await supabaseClient.auth.signUp({ email, password }); if (signUpError) { msg.innerText = signUpError.message; return; }} msg.innerText = "Success!"; checkSessionAndRoute(); });
-        document.getElementById('google-btn').onclick = () => supabaseClient.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: REDIRECT_URL }});
-        document.getElementById('github-btn').onclick = () => supabaseClient.auth.signInWithOAuth({ provider: 'github', options: { redirectTo: REDIRECT_URL }});
-        document.getElementById('ob-submit').onclick = async () => { const name = document.getElementById('ob-name').value; const theme = document.querySelector('.theme-btn.bg-\\[\\#834DFB\\]')?.dataset.theme || 'Signature'; if (!name || !document.getElementById('ob-age').checked) return alert("Please enter name and confirm age."); await supabaseClient.from('profiles').insert({ id: currentUser.id, username: name, theme }); window.location.href = 'chat.html'; };
-        document.querySelectorAll('.theme-btn').forEach(btn => btn.onclick = e => { document.querySelectorAll('.theme-btn').forEach(b => b.classList.replace('bg-[#834DFB]', 'bg-gray-200') || b.classList.replace('text-white', 'text-black')); e.target.classList.replace('bg-gray-200', 'bg-[#834DFB]'); e.target.classList.add('text-white'); });
-    }
+    // Helper to safely attach events
+    const safeOn = (id, event, cb) => document.getElementById(id)?.addEventListener(event, cb);
 
+    // --- Index Page Auth & Onboarding ---
+    safeOn('auth-btn', 'click', async () => { 
+        const email = document.getElementById('email-input').value, password = document.getElementById('pwd-input').value, msg = document.getElementById('auth-msg'); 
+        msg.innerText = "Processing..."; 
+        let { error } = await supabaseClient.auth.signInWithPassword({ email, password }); 
+        if (error) { 
+            const { error: signUpError } = await supabaseClient.auth.signUp({ email, password }); 
+            if (signUpError) { msg.innerText = signUpError.message; return; }
+        } 
+        msg.innerText = "Success!"; 
+        checkSessionAndRoute(); 
+    });
+
+    safeOn('google-btn', 'click', () => supabaseClient.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: REDIRECT_URL }}));
+    safeOn('github-btn', 'click', () => supabaseClient.auth.signInWithOAuth({ provider: 'github', options: { redirectTo: REDIRECT_URL }}));
+
+    safeOn('ob-submit', 'click', async () => { 
+        const name = document.getElementById('ob-name').value; 
+        const theme = document.querySelector('.theme-btn.bg-\\[\\#834DFB\\]')?.dataset.theme || 'Signature'; 
+        if (!name || !document.getElementById('ob-age').checked) return alert("Please enter name and confirm age."); 
+        await supabaseClient.from('profiles').insert({ id: currentUser.id, username: name, theme }); 
+        window.location.href = 'chat.html'; 
+    });
+
+    document.querySelectorAll('.theme-btn').forEach(btn => btn.onclick = e => { 
+        document.querySelectorAll('.theme-btn').forEach(b => b.classList.replace('bg-[#834DFB]', 'bg-gray-200') || b.classList.replace('text-white', 'text-black')); 
+        e.target.classList.replace('bg-gray-200', 'bg-[#834DFB]'); e.target.classList.add('text-white'); 
+    });
+
+    // --- Chat Page Main UI ---
     if (document.getElementById('chat-area')) {
         const msgInput = document.getElementById('msg-input');
         msgInput.addEventListener('input', function() { this.style.height = 'auto'; this.style.height = Math.min(this.scrollHeight, 150) + 'px'; });
 
-        document.getElementById('menu-btn').onclick = window.toggleSidebar; 
-        document.getElementById('logout-btn').onclick = async () => { await supabaseClient.auth.signOut(); window.location.href = 'index.html'; };
+        safeOn('menu-btn', 'click', window.toggleSidebar);
+        safeOn('logout-btn', 'click', async () => { await supabaseClient.auth.signOut(); window.location.href = 'index.html'; });
         
-        document.getElementById('new-chat-btn').onclick = () => { 
+        safeOn('new-chat-btn', 'click', () => { 
             currentConversationId = null; 
             document.getElementById('messages-container').innerHTML = ''; 
             document.getElementById('empty-state').classList.remove('hidden'); 
             loadConversations(); 
             window.closeOverlays(); 
-        };
+        });
         
-        document.getElementById('attach-btn').onclick = () => document.getElementById('file-input')?.click();
-        document.getElementById('file-input').onchange = e => { if (e.target.files.length) { attachedImageFile = e.target.files[0]; document.getElementById('image-preview')?.classList.remove('hidden'); } };
-        document.getElementById('rm-img').onclick = () => { attachedImageFile = null; document.getElementById('file-input').value = ""; document.getElementById('image-preview')?.classList.add('hidden'); };
-        document.getElementById('personality-switcher').onchange = (e) => activePersonalityId = e.target.value;
-        document.getElementById('stop-generating-btn').onclick = () => { if(streamController) streamController.abort(); };
+        safeOn('attach-btn', 'click', () => document.getElementById('file-input')?.click());
+        
+        const fileInp = document.getElementById('file-input');
+        if (fileInp) fileInp.onchange = e => { if (e.target.files.length) { attachedImageFile = e.target.files[0]; document.getElementById('image-preview')?.classList.remove('hidden'); } };
+        
+        safeOn('rm-img', 'click', () => { attachedImageFile = null; document.getElementById('file-input').value = ""; document.getElementById('image-preview')?.classList.add('hidden'); });
+        
+        const pSwitch = document.getElementById('personality-switcher');
+        if (pSwitch) pSwitch.onchange = (e) => activePersonalityId = e.target.value;
+        
+        safeOn('stop-generating-btn', 'click', () => { if(streamController) streamController.abort(); });
 
-        document.getElementById('settings-btn').onclick = () => {
+        safeOn('settings-btn', 'click', () => {
             window.closeOverlays();
             document.getElementById('set-name').value = userProfile?.username || '';
             const themeSelect = document.getElementById('set-theme'); themeSelect.innerHTML = Object.keys(appThemes).map(t => `<option value="${t}">${t}</option>`).join(''); themeSelect.value = userProfile?.theme || 'Signature';
@@ -285,13 +277,19 @@ window.addEventListener('DOMContentLoaded', () => {
             
             if (userProfile?.is_paid) { document.getElementById('pro-badge')?.classList.remove('hidden'); document.getElementById('get-pro-btn')?.classList.add('hidden'); }
             setTimeout(() => document.getElementById('settings-sheet').style.transform = 'translateY(0)', 100);
-        };
+        });
         
-        document.querySelectorAll('.tab-btn').forEach(btn => btn.onclick = (e) => { document.querySelectorAll('.tab-btn').forEach(b => { b.classList.remove('active', 'text-qroma', 'border-b-2', 'border-qroma'); b.classList.add('text-gray-400'); }); e.target.classList.add('active', 'text-qroma', 'border-b-2', 'border-qroma'); e.target.classList.remove('text-gray-400'); document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden')); document.getElementById(`tab-${e.target.dataset.tab}`).classList.remove('hidden'); });
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.onclick = (e) => { 
+            document.querySelectorAll('.tab-btn').forEach(b => { b.classList.remove('active', 'text-qroma', 'border-b-2', 'border-qroma'); b.classList.add('text-gray-400'); }); 
+            e.target.classList.add('active', 'text-qroma', 'border-b-2', 'border-qroma'); e.target.classList.remove('text-gray-400'); 
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden')); 
+            document.getElementById(`tab-${e.target.dataset.tab}`).classList.remove('hidden'); 
+        });
         
-        document.getElementById('set-font-url').onkeyup = async (e) => { if (e.key === 'Enter' && userProfile?.is_paid) { const url = e.target.value.trim(); if (!url) return; const match = url.match(/family=([^&:]+)/); if (match) { const fontName = decodeURIComponent(match[1].replace(/\+/g, ' ')); loadAndApplyFont(fontName, url); if (!builtInFonts.includes(fontName)) builtInFonts.push(fontName); document.getElementById('settings-btn').click(); } else alert("Invalid Google Font URL format."); } };
+        const setFontUrl = document.getElementById('set-font-url');
+        if (setFontUrl) setFontUrl.onkeyup = async (e) => { if (e.key === 'Enter' && userProfile?.is_paid) { const url = e.target.value.trim(); if (!url) return; const match = url.match(/family=([^&:]+)/); if (match) { const fontName = decodeURIComponent(match[1].replace(/\+/g, ' ')); loadAndApplyFont(fontName, url); if (!builtInFonts.includes(fontName)) builtInFonts.push(fontName); document.getElementById('settings-btn').click(); } else alert("Invalid Google Font URL format."); } };
         
-        document.getElementById('save-settings-btn').onclick = async () => {
+        safeOn('save-settings-btn', 'click', async () => {
             const btn = document.getElementById('save-settings-btn'); btn.innerText = "Saving...";
             const newName = document.getElementById('set-name').value, newTheme = document.getElementById('set-theme').value, newFontUrl = document.getElementById('set-font-url').value.trim(), newFontName = document.querySelector('.font-pill.active')?.dataset.font || 'Inter', customSys = document.getElementById('set-custom-prompt').value.trim();
             const newPName = document.getElementById('new-personality-name').value.trim(), newPPrompt = document.getElementById('new-personality-prompt').value.trim();
@@ -303,24 +301,24 @@ window.addEventListener('DOMContentLoaded', () => {
             if (newPName && newPPrompt) { await supabaseClient.from('personalities').insert({ user_id: currentUser.id, name: newPName, prompt: newPPrompt }); document.getElementById('new-personality-name').value = ''; document.getElementById('new-personality-prompt').value = ''; }
             
             await checkSessionAndRoute(); btn.innerText = "Save"; window.closeOverlays();
-        };
+        });
 
-        document.getElementById('get-pro-btn').onclick = () => {
+        safeOn('get-pro-btn', 'click', () => {
             const text = encodeURIComponent(`Hi! I'd like to get Qroma Pro.\nName: ${userProfile?.username}\nEmail: ${currentUser?.email}\nUser ID: ${currentUser?.id}`);
             window.open(`https://wa.me/923437335632?text=${text}`, '_blank');
-        };
+        });
         
         // STREAMING SEND LOGIC
-        document.getElementById('send-btn').onclick = async () => {
+        safeOn('send-btn', 'click', async () => {
             const text = msgInput.value.trim(); if (!text && !attachedImageFile) return;
-            msgInput.value = ''; msgInput.style.height = 'auto'; let uploadedImgUrl = null, localBlobUrl = null;
+            msgInput.value = ''; msgInput.style.height = 'auto'; let uploadedImgUrl = null;
 
             if (!currentConversationId) {
                 const { data } = await supabaseClient.from('conversations').insert({ user_id: currentUser.id, title: text.substring(0,25) || 'New Chat' }).select().single();
                 if (!data) return alert("DB Error."); currentConversationId = data.id; document.getElementById('empty-state')?.classList.add('hidden'); await loadConversations();
             }
 
-            if (attachedImageFile) { if ((userProfile.images_used_today || 0) >= 5 && !userProfile.is_paid) return alert("Image limit reached! Upgrade to Pro."); localBlobUrl = URL.createObjectURL(attachedImageFile); const fileName = `${currentUser.id}/${Date.now()}`; const { data } = await supabaseClient.storage.from('chat-images').upload(fileName, attachedImageFile); uploadedImgUrl = data ? supabaseClient.storage.from('chat-images').getPublicUrl(data.path).data.publicUrl : null; await supabaseClient.from('profiles').update({ images_used_today: (userProfile.images_used_today || 0) + 1 }).eq('id', currentUser.id); }
+            if (attachedImageFile) { if ((userProfile.images_used_today || 0) >= 5 && !userProfile.is_paid) return alert("Image limit reached! Upgrade to Pro."); const fileName = `${currentUser.id}/${Date.now()}`; const { data } = await supabaseClient.storage.from('chat-images').upload(fileName, attachedImageFile); uploadedImgUrl = data ? supabaseClient.storage.from('chat-images').getPublicUrl(data.path).data.publicUrl : null; await supabaseClient.from('profiles').update({ images_used_today: (userProfile.images_used_today || 0) + 1 }).eq('id', currentUser.id); }
 
             renderMessage('user', text, 'temp-user');
             const aiMessageElement = renderMessage('assistant', null, 'temp-ai');
@@ -343,13 +341,13 @@ window.addEventListener('DOMContentLoaded', () => {
 
                 let model = 'llama-3.3-70b-versatile'; 
                 if (currentImgFile) {
-                    model = 'meta-llama/llama-4-scout-17b-16e-instruct'; 
+                    model = 'llama-3.2-11b-vision-preview'; 
                     messagesPayload.push({ role: 'user', content: [{ type: "text", text: text || "Analyze this image." }, { type: "image_url", image_url: { url: await fileToBase64(currentImgFile) } }] });
                 } else {
                     messagesPayload.push({ role: 'user', content: text });
                 }
 
-                const res = await fetch('https://api.groq.com/openai/v1/chat/completions', { method: 'POST', headers: { 'Authorization': `Bearer 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`, 'Content-Type': 'application/json' }, body: JSON.stringify({ model, messages: messagesPayload, stream: true }), signal: streamController.signal });
+                const res = await fetch('https://api.groq.com/openai/v1/chat/completions', { method: 'POST', headers: { 'Authorization': `Bearer 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`, 'Content-Type': 'application/json' }, body: JSON.stringify({ model, messages: messagesPayload, stream: true }), signal: streamController.signal });
                 if (!res.ok) { const err = await res.json(); throw new Error(err.error?.message || "API Failed"); }
                 
                 const reader = res.body.getReader();
@@ -388,6 +386,6 @@ window.addEventListener('DOMContentLoaded', () => {
             } catch (error) { 
                 if (error.name !== 'AbortError') { aiMessageElement.querySelector('.content').innerHTML = `<p class="text-red-500 font-bold">Error: ${error.message}</p>`; console.error(error); }
             } finally { document.getElementById('stop-generating-btn').classList.add('hidden'); streamController = null; }
-        };
+        });
     }
 });
