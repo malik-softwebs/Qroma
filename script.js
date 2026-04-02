@@ -61,15 +61,15 @@ window.regenerateLastResponse = async () => { if (!currentConversationId) return
 setInterval(() => { const clock = document.getElementById('header-clock'); if (clock) clock.innerText = new Date().toLocaleString([], { weekday: 'short', hour: '2-digit', minute: '2-digit' }); }, 1000);
 
 // ======================= CORE DATA ROUTING =======================
-// Replace your existing checkSessionAndRoute in script.js with this:
+// Optimized Logic for script.js
 const checkSessionAndRoute = async () => {
     const { data: { session } } = await supabaseClient.auth.getSession();
     currentUser = session?.user || null;
     const isIndex = !!document.getElementById('screen-auth');
 
     if (currentUser) {
-        // Explicitly fetch the profile to see if onboarding was completed
-        const { data: profile, error } = await supabaseClient
+        // 1. Check if profile exists
+        const { data: profile } = await supabaseClient
             .from('profiles')
             .select('*')
             .eq('id', currentUser.id)
@@ -78,19 +78,19 @@ const checkSessionAndRoute = async () => {
         userProfile = profile;
 
         if (!profile) {
-            // User exists but has no profile record: Show Onboarding
+            // 2. STALL REDIRECTION: Stay on index and show onboarding
             if (isIndex) {
                 document.getElementById('onboarding-modal')?.classList.replace('hidden', 'flex');
             } else {
-                // If they somehow reached chat.html without a profile, send them back to onboard
+                // If they are on chat.html without a profile, send back to index to onboard
                 window.location.href = 'index.html';
             }
         } else {
-            // Profile exists: Proceed to Chat
+            // 3. PROFILE EXISTS: Move to chat
             if (isIndex) {
                 window.location.href = 'chat.html';
             } else {
-                // Standard chat initialization
+                // Initialize chat application data
                 const { data: prefs } = await supabaseClient.from('user_preferences').select('*').eq('id', currentUser.id).single();
                 userPreferences = prefs || {};
                 const { data: perso } = await supabaseClient.from('personalities').select('*').eq('user_id', currentUser.id);
@@ -102,7 +102,32 @@ const checkSessionAndRoute = async () => {
             }
         }
     } else if (!isIndex) {
+        // No session and trying to access chat: send to login
         window.location.href = 'index.html';
+    }
+};
+
+// Update the onboarding submit button handler to trigger the redirect
+document.getElementById('ob-submit').onclick = async () => {
+    const name = document.getElementById('ob-name').value;
+    const theme = document.querySelector('.theme-btn.bg-\\[\\#834DFB\\]')?.dataset.theme || 'Signature';
+    
+    if (!name || !document.getElementById('ob-age').checked) {
+        return alert("Please enter name and confirm age.");
+    }
+
+    // Create the profile
+    const { error } = await supabaseClient.from('profiles').insert({ 
+        id: currentUser.id, 
+        username: name, 
+        theme: theme 
+    });
+
+    if (error) {
+        alert("Error saving profile: " + error.message);
+    } else {
+        // Success: Automatically route to chat.html
+        window.location.href = 'chat.html';
     }
 };
 
