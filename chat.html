@@ -115,6 +115,35 @@
         <div id="rename-modal" class="overlay fixed inset-0 z-[60] hidden items-center justify-center bg-black/60"><div class="bg-white rounded-2xl p-6 w-11/12 max-w-sm space-y-4"><h3 class="text-lg font-bold">Rename Chat</h3><input id="rename-input" class="w-full p-3 bg-gray-100 rounded-lg outline-none font-medium"><div class="flex gap-2 justify-end pt-2"><button onclick="window.closeOverlays()" class="px-4 py-2 rounded-lg font-medium text-gray-600">Cancel</button><button onclick="window.confirmRename()" id="confirm-rename" class="px-4 py-2 rounded-lg bg-black text-white font-bold">Save</button></div></div></div>
 
     </div>
+
+
+    <div id="onboarding-modal" class="overlay fixed inset-0 z-[70] hidden items-center justify-center bg-black/60 backdrop-blur-sm">
+    <div class="bg-white rounded-3xl p-8 w-11/12 max-w-md shadow-2xl animate-fade-in-up">
+        <h3 class="text-2xl font-bold font-coolvetica mb-2">Welcome to Qroma</h3>
+        <p class="text-gray-500 text-sm mb-6">Let's set up your profile.</p>
+        
+        <input id="ob-name" type="text" placeholder="Your Name" class="w-full p-4 rounded-xl bg-gray-50 outline-none border border-gray-200 focus:border-[#834DFB] transition-colors mb-4 font-medium">
+        
+        <label class="flex items-center gap-3 text-sm font-medium mb-6 cursor-pointer">
+            <input type="checkbox" id="ob-age" class="w-5 h-5 accent-[#834DFB] rounded"> I am 18 or older
+        </label>
+        
+        <div class="mb-8">
+            <p class="text-sm font-bold mb-3 text-gray-700">Select Your Starting Theme</p>
+            <div class="grid grid-cols-3 gap-2 text-xs" id="theme-grid">
+                <button class="theme-btn p-3 rounded-xl bg-[#834DFB] text-white font-bold transition-all" data-theme="Signature">Signature</button>
+                <button class="theme-btn p-3 rounded-xl bg-gray-100 text-gray-600 font-bold hover:bg-gray-200 transition-all" data-theme="Midnight">Midnight</button>
+                <button class="theme-btn p-3 rounded-xl bg-gray-100 text-gray-600 font-bold hover:bg-gray-200 transition-all" data-theme="Noir">Noir</button>
+                <button class="theme-btn p-3 rounded-xl bg-gray-100 text-gray-600 font-bold hover:bg-gray-200 transition-all" data-theme="Ocean">Ocean</button>
+                <button class="theme-btn p-3 rounded-xl bg-gray-100 text-gray-600 font-bold hover:bg-gray-200 transition-all" data-theme="Forest">Forest</button>
+                <button class="theme-btn p-3 rounded-xl bg-gray-100 text-gray-600 font-bold hover:bg-gray-200 transition-all" data-theme="Burgundy">Burgundy</button>
+            </div>
+        </div>
+        
+        <button id="ob-submit" class="w-full py-4 bg-black text-white rounded-xl font-bold text-lg shadow-xl shadow-black/20 active:scale-95 transition-all">Start Exploring</button>
+    </div>
+</div>
+
     <script src="script.js"></script>
 </body>
 </html>
